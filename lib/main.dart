@@ -54,12 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[characterList.isEmpty ? buildEmptyMessage() : buildFirstItem()],
-        ),
-      ),
+      body: characterList.isEmpty ? buildEmptyMessage() : buildItemList(),
       floatingActionButton: FloatingActionButton(
         onPressed: fetchCharacters,
         tooltip: 'FetchChars',
@@ -69,19 +64,25 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   buildEmptyMessage() {
-    return const Text("No characters");
+    return const Center(
+      child: Text("No characters"),
+    );
   }
 
-  Widget buildFirstItem() {
-    return Row(
-      children: [
-        Image(
-          image: NetworkImage(characterList.first.image),
-          width: 200,
-        ),
-        const SizedBox(width: 8),
-        Text(characterList.first.name)
-      ],
-    );
+  buildItemList() {
+    return ListView.builder(
+        itemCount: characterList.length,
+        itemBuilder: (context, index) {
+          return Row(
+            children: [
+              Image(
+                image: NetworkImage(characterList[index].image),
+                width: 200,
+              ),
+              const SizedBox(width: 8),
+              Text(characterList[index].name)
+            ],
+          );
+        });
   }
 }
