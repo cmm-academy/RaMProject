@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ram_project/character_details_screen.dart';
 import 'package:ram_project/response_wrapper.dart';
 
 import 'character.dart';
@@ -71,18 +72,33 @@ class _MyHomePageState extends State<MyHomePage> {
 
   buildItemList() {
     return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: characterList.length,
         itemBuilder: (context, index) {
-          return Row(
-            children: [
-              Image(
-                image: NetworkImage(characterList[index].image),
-                width: 200,
-              ),
-              const SizedBox(width: 8),
-              Text(characterList[index].name)
-            ],
-          );
+          final character = characterList[index];
+          return Card(
+              clipBehavior: Clip.hardEdge,
+              shape:
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => CharacterDetailsScreen(character: character),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Image(
+                      image: NetworkImage(character.image),
+                      width: 80,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(character.name)
+                  ],
+                ),
+              ));
         });
   }
 }
