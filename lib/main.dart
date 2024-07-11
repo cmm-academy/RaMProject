@@ -1,4 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:ram_project/response_wrapper.dart';
+
+import 'character.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,12 +16,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Rick And Morty Project',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF70b3c5)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Home Page'),
     );
   }
 }
@@ -30,12 +36,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  List<Character> characterList = List.empty();
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  fetchCharacters() async {
+    final response = await http.get(Uri.parse('https://rickandmortyapi.com/api/character'));
+    if (response.statusCode == 200) {
+      setState(() {
+        characterList = ResponseWrapper.fromJson(jsonDecode(response.body)).results;
+      });
+    }
   }
 
   @override
@@ -48,22 +57,31 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+          children: <Widget>[characterList.isEmpty ? buildEmptyMessage() : buildFirstItem()],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: fetchCharacters,
+        tooltip: 'FetchChars',
+        child: const Icon(Icons.refresh_outlined),
       ),
+    );
+  }
+
+  buildEmptyMessage() {
+    return const Text("No characters");
+  }
+
+  Widget buildFirstItem() {
+    return Row(
+      children: [
+        Image(
+          image: NetworkImage(characterList.first.image),
+          width: 200,
+        ),
+        const SizedBox(width: 8),
+        Text(characterList.first.name)
+      ],
     );
   }
 }
