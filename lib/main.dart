@@ -1,14 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ram_project/bloc/character_bloc.dart';
 import 'package:ram_project/character_details_screen.dart';
-import 'package:ram_project/response_wrapper.dart';
 
 import 'character.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(BlocProvider(create: (context) => CharacterBloc(), child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -37,17 +35,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Character> characterList = List.empty();
-  List<Character> completeList = List.empty();
-
-  fetchCharacters() async {
-    final response = await http.get(Uri.parse('https://rickandmortyapi.com/api/character'));
-    if (response.statusCode == 200) {
-      completeList = ResponseWrapper.fromJson(jsonDecode(response.body)).results;
-      setState(() {
-        characterList = completeList;
-      });
-    }
+  @override
+  void initState() {
+    super.initState();
+    fetchCharacters();
   }
 
   @override
@@ -57,7 +48,17 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: characterList.isEmpty ? buildEmptyMessage() : buildItemList(),
+      body: BlocBuilder<CharacterBloc, CharacterState>(builder: (context, state) {
+        if (state is CharacterLoadingState) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is CharacterLoadedState) {
+          return buildItemList(state.characters);
+        } else if (state is CharacterErrorState) {
+          return Center(child: Text(state.errorMessage));
+        } else {
+          return const Center(child: Text("Unknown state"));
+        }
+      }),
       floatingActionButton: FloatingActionButton(
         onPressed: fetchCharacters,
         tooltip: 'FetchChars',
@@ -66,13 +67,17 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  fetchCharacters() {
+    context.read<CharacterBloc>().add(FetchCharactersEvent());
+  }
+
   buildEmptyMessage() {
     return const Center(
       child: Text("No characters"),
     );
   }
 
-  buildItemList() {
+  buildItemList(List<Character> characters) {
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
@@ -81,22 +86,22 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             OutlinedButton(
                 onPressed: () {
-                  filterChars(Status.all);
+                  context.read<CharacterBloc>().add(FilterCharactersEvent(Status.all));
                 },
                 child: Text(Status.all.name)),
             OutlinedButton(
                 onPressed: () {
-                  filterChars(Status.alive);
+                  context.read<CharacterBloc>().add(FilterCharactersEvent(Status.alive));
                 },
                 child: Text(Status.alive.name)),
             OutlinedButton(
                 onPressed: () {
-                  filterChars(Status.dead);
+                  context.read<CharacterBloc>().add(FilterCharactersEvent(Status.dead));
                 },
                 child: Text(Status.dead.name)),
             OutlinedButton(
                 onPressed: () {
-                  filterChars(Status.unknown);
+                  context.read<CharacterBloc>().add(FilterCharactersEvent(Status.unknown));
                 },
                 child: Text(Status.unknown.name)),
           ],
@@ -104,7 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
         SliverList(
           delegate: SliverChildBuilderDelegate(
             (BuildContext context, int index) {
-              final character = characterList[index];
+              final character = characters[index];
               return Card(
                   clipBehavior: Clip.hardEdge,
                   shape: const RoundedRectangleBorder(
@@ -129,26 +134,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ));
             },
-            childCount: characterList.length,
+            childCount: characters.length,
           ),
         ),
       ],
     );
-  }
-
-  void filterChars(Status status) {
-    List<Character> filteredList = List.empty();
-    switch (status) {
-      case Status.all:
-        filteredList = completeList;
-        break;
-      default:
-        filteredList = completeList.where((character) {
-          return character.status == status;
-        }).toList();
-    }
-    setState(() {
-      characterList = filteredList;
-    });
   }
 }
