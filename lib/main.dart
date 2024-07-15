@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ram_project/bloc/character_bloc.dart';
+import 'package:ram_project/bloc/character/character_bloc.dart';
+import 'package:ram_project/bloc/episode/episode_bloc.dart';
 import 'package:ram_project/character_details_screen.dart';
 
-import 'character.dart';
+import 'model/character.dart';
 
 void main() {
-  runApp(BlocProvider(create: (context) => CharacterBloc(), child: const MyApp()));
+  runApp(MultiBlocProvider(providers: [
+    BlocProvider(create: (context) => CharacterBloc()),
+    BlocProvider(create: (context) => EpisodeBloc())
+  ], child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
