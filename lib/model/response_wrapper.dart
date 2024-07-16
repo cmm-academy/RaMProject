@@ -1,4 +1,4 @@
-import 'package:ram_project/character.dart';
+import 'package:ram_project/model/character.dart';
 
 class ResponseWrapper {
   final List<Character> results;
