@@ -39,6 +39,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Status selectedStatus = Status.all;
+
   @override
   void initState() {
     super.initState();
@@ -85,63 +87,64 @@ class _MyHomePageState extends State<MyHomePage> {
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
-            child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            OutlinedButton(
-                onPressed: () {
-                  context.read<CharacterBloc>().add(FilterCharactersEvent(Status.all));
-                },
-                child: Text(Status.all.name)),
-            OutlinedButton(
-                onPressed: () {
-                  context.read<CharacterBloc>().add(FilterCharactersEvent(Status.alive));
-                },
-                child: Text(Status.alive.name)),
-            OutlinedButton(
-                onPressed: () {
-                  context.read<CharacterBloc>().add(FilterCharactersEvent(Status.dead));
-                },
-                child: Text(Status.dead.name)),
-            OutlinedButton(
-                onPressed: () {
-                  context.read<CharacterBloc>().add(FilterCharactersEvent(Status.unknown));
-                },
-                child: Text(Status.unknown.name)),
-          ],
-        )),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              final character = characters[index];
-              return Card(
-                  clipBehavior: Clip.hardEdge,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(8))),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => CharacterDetailsScreen(character: character),
-                        ),
-                      );
+            child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8.0,
+          children: Status.values
+              .map((status) => ChoiceChip(
+                    label: Text(status.name),
+                    selected: selectedStatus == status,
+                    onSelected: (bool selected) {
+                      setState(() {
+                        selectedStatus = status;
+                        context.read<CharacterBloc>().add(FilterCharactersEvent(status));
+                      });
                     },
-                    child: Row(
-                      children: [
-                        Image(
-                          image: NetworkImage(character.image),
-                          width: 80,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(character.name)
-                      ],
-                    ),
-                  ));
-            },
-            childCount: characters.length,
-          ),
-        ),
+                  ))
+              .toList(),
+        )),
+        buildExpandedView(characters)
       ],
+    );
+  }
+
+  buildExpandedView(List<Character> characters) {
+    return SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          final character = characters[index];
+          return Card(
+              clipBehavior: Clip.hardEdge,
+              shape:
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => CharacterDetailsScreen(character: character),
+                    ),
+                  );
+                },
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    Flexible(
+                      child: Image(
+                        image: NetworkImage(character.image),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(character.name),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ));
+        },
+        childCount: characters.length,
+      ),
     );
   }
 }

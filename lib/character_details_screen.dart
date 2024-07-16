@@ -39,26 +39,57 @@ class _CharacterDetailsScreenState extends State<CharacterDetailsScreen> {
   Widget buildDetailsScreen(Episode episode) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(widget.character.name),
           centerTitle: false,
         ),
         body: SingleChildScrollView(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Image.network(
-                    widget.character.image,
+              Image.network(
+                widget.character.image,
+                width: MediaQuery.of(context).size.width,
+                fit: BoxFit.cover,
+              ),
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    widget.character.name,
+                    style: const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
                   )),
               Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Text("Current Location: ${widget.character.location.name}")),
-              Text("Origin: ${widget.character.origin.name}"),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text("Status: ${widget.character.status.name}")),
               const SizedBox(height: 16),
-              const Text("First Episode"),
-              Text(episode.episode),
-              Text("Title: ${episode.name}"),
-              Text("Release date: ${episode.airDate}"),
+              const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    "Current Location",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )),
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(widget.character.location.name)),
+              const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    "Origin",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )),
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(widget.character.origin.name)),
+              const SizedBox(height: 16),
+              const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    "First Episode",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text("${episode.episode} - ${episode.name} - ${episode.airDate}"),
+              ),
             ],
           ),
         ));
